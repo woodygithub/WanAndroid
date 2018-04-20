@@ -4,34 +4,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ListView
-import android.widget.ScrollView
-import com.jakewharton.rxbinding2.support.v7.widget.dataChanges
 import com.just.agentweb.AgentWeb
 import com.wan.wanandroid.R
-import com.wan.wanandroid.R.id.refresh
-import com.wan.wanandroid.home.api.HomeList
-import com.wan.wanandroid.home.bean.HomeBean
+import com.wan.wanandroid.home.bean.Data
 import com.wan.wanandroid.home.bean.Item
-import com.wan.wanandroid.retrofit.RetrofitUtil
+import com.wan.wanandroid.home.data.WanRepository
 import com.wan.wanandroid.home.state.HomeListState
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_list.view.*
 import me.yokeyword.fragmentation.SupportFragment
-import android.widget.LinearLayout
-
-
-
 
 /**
  * A fragment representing a list of Items.
@@ -44,24 +31,39 @@ import android.widget.LinearLayout
  * Mandatory empty constructor for the fragment manager to instantiate the
  * fragment (e.g. upon screen orientation changes).
  */
-class HomeItemFragment :HomeView, SupportFragment() {
+class HomeItemFragment: SupportFragment(),HomeContract.View {
+    override lateinit var presenter: HomeContract.Presenter
 
     lateinit var list:RecyclerView
     lateinit var refresh:SwipeRefreshLayout
-    var page :Int = 0
-    private var mColumnCount = 1
     private lateinit var mListener: OnListFragmentInteractionListener
     private lateinit var mAgentWeb: AgentWeb
 
-    override fun render(homeListState: HomeListState) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun render(it: Data) {
+        val adapter = list.adapter
+        when(adapter){
+            is ItemRecyclerViewAdapter ->{
+                it.datas?.let{
+                    if(HomeListState.page == 0) {
+                        adapter.setValues(it)
+                    }else{
+                        adapter.appValues(it)
+                    }
+                }
+            }
+        }
+        it.curPage?.let {
+            HomeListState.page = it
+        }
+        if(refresh.isRefreshing()){
+            refresh.setRefreshing(false)
+        }
     }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let { mColumnCount = it.getInt(ARG_COLUMN_COUNT) }
-
+        presenter = HomeListPresenter(WanRepository(),this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?):View {
@@ -70,62 +72,31 @@ class HomeItemFragment :HomeView, SupportFragment() {
         list = view.list
         refresh = view.refresh
         val context = view.getContext()
-        if (mColumnCount <= 1) {
-            list.layoutManager = LinearLayoutManager(context)
-        } else {
-            list.layoutManager = GridLayoutManager(context, mColumnCount)
-        }
+        list.setLayoutManager(LinearLayoutManager(context))
         list.adapter = ItemRecyclerViewAdapter(mListener)
 
         refresh.setOnRefreshListener {
-            get(page)
+            HomeListState.page = 0
+            presenter.load()
         }
         refresh.setOnChildScrollUpCallback { parent, child ->
             child?.let {
                 if(!child.canScrollVertically(1)){
-                    get(page)
+                    presenter.load()
                     return@setOnChildScrollUpCallback true
                 }
                 return@setOnChildScrollUpCallback false
             }
             return@setOnChildScrollUpCallback false
         }
-        refresh.setRefreshing(true)
-        get(page)
-
         return view
     }
 
-    fun get(page:Int){
-        val retrofit = RetrofitUtil.getInstance()
-        var homeList: HomeList? = retrofit.create(HomeList::class.java)
-        val subscribe = homeList!!.getHomeList(page)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe( Consumer<HomeBean>{
-                      it.data.curPage?.let { this.page = it }
-                    val adapter = list.adapter
-                    if(adapter is ItemRecyclerViewAdapter){
-                        it.data.datas!!.let{
-                            if(page == 0) {
-                                adapter.setValues(it)
-                            }else{
-                                adapter.appValues(it)
-                            }
-                        }
-                    }
-                    if(refresh.isRefreshing()){
-                        refresh.setRefreshing(false)
-                    }
-                }, Consumer<Throwable>{
-                     it.printStackTrace()
-                    }
-                )
-    }
 
     override fun onResume() {
         super.onResume()
-
+        refresh.setRefreshing(true)
+        presenter.start()
     }
 
     override fun onAttach(context: Context?) {
@@ -133,10 +104,7 @@ class HomeItemFragment :HomeView, SupportFragment() {
             mListener =   object :OnListFragmentInteractionListener{
                 override fun onListFragmentInteraction(item: Item){
                     Log.i("ss",item.title)
-                    Observable.just(item.title).subscribe(System.out::println)
-                    val intent = Intent(activity,ContentActivity::class.java)
-                    intent.putExtra(this@HomeItemFragment::class.java.simpleName,item)
-                    startActivity(intent)
+                   presenter.openDetails(item)
                 }
             }
     }

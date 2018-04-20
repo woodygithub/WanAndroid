@@ -35,7 +35,7 @@ class ContentActivity: AppCompatActivity() {
             }
         }
         intent.extras?.let {
-            item = it.getParcelable<Item>(HomeItemFragment::class.java.simpleName)
+            item = it.getParcelable<Item>(Item::class.java.simpleName)
             agentWeb = item.link.getAgentWeb(
                     this,
                     webContent,
