@@ -18,8 +18,6 @@ import com.wan.wanandroid.eyepetizer.KYItemFragment.OnListFragmentInteractionLis
 import com.wan.wanandroid.eyepetizer.api.KYApi
 import com.wan.wanandroid.eyepetizer.bean.RealUrl
 import com.wan.wanandroid.retrofit.RetrofitUtil
-import com.wan.wanandroid.widget.media.AndroidMediaController
-import com.wan.wanandroid.widget.media.IjkVideoView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers

@@ -1,20 +1,13 @@
 package com.wan.wanandroid.home
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.LinearLayout
 import com.just.agentweb.AgentWeb
-import com.just.agentweb.DefaultChromeClient
-import com.just.agentweb.MiddlewareWebChromeBase
 import com.wan.wanandroid.R
 import com.wan.wanandroid.getAgentWeb
 import com.wan.wanandroid.home.bean.Item
-import com.wan.wanandroid.login.LoginActivity
 import kotlinx.android.synthetic.main.activity_content.*
 
 class ContentActivity: AppCompatActivity() {

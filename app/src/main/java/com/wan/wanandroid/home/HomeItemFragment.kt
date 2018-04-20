@@ -1,7 +1,6 @@
 package com.wan.wanandroid.home
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -16,7 +15,6 @@ import com.wan.wanandroid.home.bean.Data
 import com.wan.wanandroid.home.bean.Item
 import com.wan.wanandroid.home.data.WanRepository
 import com.wan.wanandroid.home.state.HomeListState
-import io.reactivex.Observable
 import kotlinx.android.synthetic.main.fragment_item_list.view.*
 import me.yokeyword.fragmentation.SupportFragment
 
