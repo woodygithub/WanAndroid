@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@android:color/white"
     app:cardPreventCornerOverlap="true"
@@ -13,12 +13,12 @@
     app:cardUseCompatPadding="true">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="match_parent"
         android:orientation="vertical">
         <com.wan.wanandroid.GSY.SampleCoverVideo
             android:id="@+id/video_item_player"
             android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+            android:layout_height="match_parent"/>
 
         <TextView
             android:id="@+id/description"

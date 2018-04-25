@@ -4,15 +4,20 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.PagerSnapHelper
 import android.support.v7.widget.RecyclerView
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.wan.wanandroid.R
 import com.wan.wanandroid.eyepetizer.bean.Item
 import com.wan.wanandroid.eyepetizer.bean.VideoListBean
 import com.wan.wanandroid.eyepetizer.data.EyepetizerRepository
+import com.wan.wanandroid.eyepetizer.state.EyepetizerState
 
 import io.reactivex.Observable
 import kotlinx.android.synthetic.main.fragment_item_list2.view.*
@@ -29,14 +34,17 @@ class KYItemFragment : SupportFragment() ,EyepetizerContract.View{
 
     override lateinit var presenter: EyepetizerContract.Presenter
     lateinit var list: RecyclerView
+    lateinit var linearLM: LinearLayoutManager
     lateinit var refresh: SwipeRefreshLayout
     private lateinit var mListener: OnListFragmentInteractionListener
+    lateinit var scrollCalculatorHelper: ScrollCalculatorHelper
 
     override fun render(it: VideoListBean) {
         val adapter = list.adapter
         if(adapter is ItemRecyclerViewAdapter){
             adapter.setValues(it.itemList)
         }
+        EyepetizerState.nextPageUrl = it.nextPageUrl
         if(refresh.isRefreshing()){
             refresh.setRefreshing(false)
         }
@@ -53,10 +61,32 @@ class KYItemFragment : SupportFragment() ,EyepetizerContract.View{
         list = view.ky_list
         refresh = view.ky_refresh
         val context = view.getContext()
-        list.layoutManager = LinearLayoutManager(context)
+        linearLM =LinearLayoutManager(context)
+        list.layoutManager = linearLM
         list.adapter = ItemRecyclerViewAdapter(mListener)
+        PagerSnapHelper().attachToRecyclerView(list)
 
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val outMetrics = DisplayMetrics()// 创建了一张白纸
+        windowManager.defaultDisplay.getMetrics(outMetrics)// 给白纸设置宽高
+        scrollCalculatorHelper = ScrollCalculatorHelper(R.id.video_item_player,0, outMetrics.heightPixels)
+        list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            internal var firstVisibleItem: Int = 0
+            internal var lastVisibleItem:Int = 0
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                scrollCalculatorHelper.onScrollStateChanged(recyclerView,newState)
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                firstVisibleItem = linearLM.findFirstVisibleItemPosition()
+                lastVisibleItem = linearLM.findLastVisibleItemPosition()
+                scrollCalculatorHelper.onScroll(recyclerView, firstVisibleItem, lastVisibleItem, 1)
+            }
+        })
         refresh.setOnRefreshListener {
+            EyepetizerState.nextPageUrl = null
             presenter.load()
         }
         refresh.setOnChildScrollUpCallback { _, child ->
@@ -76,14 +106,31 @@ class KYItemFragment : SupportFragment() ,EyepetizerContract.View{
             }
             return@setOnChildScrollUpCallback false
         }
-
+        refresh.setRefreshing(true)
+        presenter.start()
         return view
+    }
+
+    override fun onBackPressedSupport(): Boolean {
+        if (GSYVideoManager.backFromWindowFull(context)) {
+            return true
+        }
+        return super.onBackPressedSupport()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        GSYVideoManager.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        refresh.setRefreshing(true)
-        presenter.start()
+        GSYVideoManager.onResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        GSYVideoManager.releaseAllVideos()
     }
 
     override fun onAttach(context: Context?) {

@@ -1,8 +1,5 @@
 package com.wan.wanandroid.retrofit
 
-import com.wan.wanandroid.R.id.content
-import com.wan.wanandroid.retrofit.annotate.Gson
-import com.wan.wanandroid.retrofit.converters.AnnotatedConverters
 import okhttp3.*
 import okhttp3.internal.Util.UTF_8
 import okhttp3.internal.http.RealResponseBody
