@@ -23,10 +23,10 @@ class MainActivity : SupportActivity() {
                 showHideFragment(f[1])  // 加载根Fragment
                 return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_notifications -> {
-//                message.setText(R.string.title_notifications)
-                return@OnNavigationItemSelectedListener true
-            }
+//            R.id.navigation_notifications -> {
+////                message.setText(R.string.title_notifications)
+//                return@OnNavigationItemSelectedListener true
+//            }
         }
         false
     }

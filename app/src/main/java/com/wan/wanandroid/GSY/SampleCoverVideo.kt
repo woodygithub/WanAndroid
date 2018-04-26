@@ -45,10 +45,6 @@ class SampleCoverVideo : StandardGSYVideoPlayer {
         return R.layout.video_layout_cover
     }
 
-    override fun onAutoCompletion() {
-        startPlayLogic()
-    }
-
     fun loadCoverImage(url: String, res: Int) {
         mCoverOriginUrl = url
         mDefaultRes = res

@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import com.shuyu.gsyvideoplayer.GSYVideoManager
+import com.wan.wanandroid.GSY.SampleCoverVideo
 import com.wan.wanandroid.R
 import com.wan.wanandroid.eyepetizer.bean.Item
 import com.wan.wanandroid.eyepetizer.bean.VideoListBean
@@ -42,7 +43,12 @@ class KYItemFragment : SupportFragment() ,EyepetizerContract.View{
     override fun render(it: VideoListBean) {
         val adapter = list.adapter
         if(adapter is ItemRecyclerViewAdapter){
-            adapter.setValues(it.itemList)
+            if(EyepetizerState.nextPageUrl == null){
+                adapter.setValues(it.itemList)
+
+            }else{
+                adapter.appValues(it.itemList)
+            }
         }
         EyepetizerState.nextPageUrl = it.nextPageUrl
         if(refresh.isRefreshing()){
@@ -123,6 +129,13 @@ class KYItemFragment : SupportFragment() ,EyepetizerContract.View{
         GSYVideoManager.onPause()
     }
 
+    override fun onSupportVisible() {
+        super.onSupportVisible()
+
+//        linearLM.getChildAt(linearLM.findFirstCompletelyVisibleItemPosition())?.let {
+//            it.findViewById<SampleCoverVideo>(R.id.video_item_player).startPlayLogic()
+//        }
+    }
     override fun onResume() {
         super.onResume()
         GSYVideoManager.onResume()

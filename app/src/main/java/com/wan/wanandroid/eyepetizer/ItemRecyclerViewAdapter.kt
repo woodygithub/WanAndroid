@@ -100,6 +100,7 @@ class ItemRecyclerViewAdapter( private val mListener: OnListFragmentInteractionL
                         //增加title
                         holder.mPlayer.getTitleTextView().setVisibility(View.GONE)
 
+                        holder.mPlayer.isLooping = true
                         //设置返回键
                         holder.mPlayer.getBackButton().setVisibility(View.GONE)
 
